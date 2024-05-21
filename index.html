@@ -3,61 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Stories</title>
-    <!-- Include any necessary CSS styles here -->
-    <style>
-        /* Add your custom CSS styles here */
-    </style>
+    <title>Directory Index</title>
 </head>
 <body>
-    <h1>Web Stories</h1>
-    <div id="stories-container">
-        <!-- Your web stories will be displayed here -->
-    </div>
+    <h1>Directory Index</h1>
+    <ul id="fileList"></ul>
 
-    <!-- Include any necessary JavaScript files here -->
     <script>
-        // Fetch and display web stories
-        window.onload = function() {
-            fetchStories();
-        };
+        // Fetch all HTML files in the directory
+        fetchFiles();
 
-        async function fetchStories() {
-            try {
-                const response = await fetch('https://api.github.com/repos/harrok9/webstories/contents/');
-                const data = await response.json();
+        async function fetchFiles() {
+            const response = await fetch('./');
+            const text = await response.text();
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(text, 'text/html');
+            const files = htmlDoc.querySelectorAll('a[href$=".html"]');
+            const fileList = document.getElementById('fileList');
 
-                const storiesContainer = document.getElementById('stories-container');
-                
-                // Filter AMP HTML files
-                const ampHTMLFiles = data.filter(file => file.name.endsWith('.html') && file.name.endsWith('.amp.html'));
-                
-                // Display each web story
-                ampHTMLFiles.forEach(file => {
-                    const storyLink = document.createElement('a');
-                    storyLink.href = '#';
-                    storyLink.textContent = file.name;
-                    storyLink.addEventListener('click', function(event) {
-                        event.preventDefault();
-                        loadStory(file.download_url);
-                    });
-                    storiesContainer.appendChild(storyLink);
-                    storiesContainer.appendChild(document.createElement('br')); // Add line break after each story link
-                });
-            } catch (error) {
-                console.error('Error fetching web stories:', error);
-            }
-        }
-
-        async function loadStory(url) {
-            try {
-                const response = await fetch(url);
-                const htmlContent = await response.text();
-                // Display the HTML content within the page
-                document.body.innerHTML = htmlContent;
-            } catch (error) {
-                console.error('Error loading story:', error);
-            }
+            files.forEach(file => {
+                const fileName = file.getAttribute('href');
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.textContent = fileName;
+                link.setAttribute('href', fileName);
+                listItem.appendChild(link);
+                fileList.appendChild(listItem);
+            });
         }
     </script>
 </body>

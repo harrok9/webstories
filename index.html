@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html amp>
+<head>
+  <meta charset="utf-8">
+  <title>AMP Web Stories</title>
+  <link rel="canonical" href="self.html">
+  <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
+  <style amp-custom>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .story-container {
+      margin: 20px 0;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    amp-iframe {
+      width: 100%;
+      height: 500px;
+    }
+  </style>
+  <script async src="https://cdn.ampproject.org/v0.js"></script>
+  <script async custom-element="amp-list" src="https://cdn.ampproject.org/v0/amp-list-0.1.js"></script>
+  <script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>
+</head>
+<body>
+  <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE">
+  <h1>AMP Web Stories</h1>
+  <amp-list width="auto" height="100" layout="fixed-height" src="/stories.json">
+    <template type="amp-mustache">
+      <div class="story-container">
+        <h2>{{title}}</h2>
+        <amp-iframe
+          sandbox="allow-scripts allow-same-origin"
+          layout="responsive"
+          frameborder="0"
+          src="{{url}}">
+        </amp-iframe>
+      </div>
+    </template>
+  </amp-list>
+
+  <script>
+    async function generateStoriesJson() {
+      const repo = 'harrok9/webstories';
+      const apiUrl = `https://api.github.com/repos/${repo}/contents`;
+      const response = await fetch(apiUrl);
+      const files = await response.json();
+      const stories = files.filter(file => file.name.endsWith('.html') && file.name !== 'index.html').map(file => ({
+        url: file.download_url,
+        title: file.name.replace('.html', ''),
+      }));
+      return stories;
+    }
+
+    generateStoriesJson().then(stories => {
+      const storiesJson = JSON.stringify(stories);
+      const blob = new Blob([storiesJson], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      document.querySelector('amp-list').setAttribute('src', url);
+    });
+  </script>
+</body>
+</html>
